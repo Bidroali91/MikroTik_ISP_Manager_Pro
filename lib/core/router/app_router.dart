@@ -17,11 +17,12 @@ import '../../presentation/maintenance/screens/maintenance_screen.dart';
 import '../../presentation/electricity/screens/electricity_screen.dart';
 import '../../presentation/settings/screens/settings_screen.dart';
 import '../../presentation/telegram/screens/telegram_screen.dart';
+import '../../presentation/user_manager/screens/user_manager_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
-final _navRoutes = ['/dashboard','/hotspot','/pppoe','/sales','/backup','/security','/complaints','/notifications','/maintenance','/electricity','/telegram','/settings'];
+final _navRoutes = ['/dashboard','/user-manager','/pppoe','/sales','/backup','/security','/complaints','/notifications','/maintenance','/electricity','/telegram','/settings'];
 
 int _routeIndex(String loc) {
   for (int i = 0; i < _navRoutes.length; i++) {
@@ -52,6 +53,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, state, child) => DashboardShell(child: child, currentRoute: _routeIndex(state.matchedLocation)),
         routes: [
           GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
+          GoRoute(path: '/user-manager', builder: (_, __) => const UserManagerScreen()),
           GoRoute(path: '/hotspot', builder: (_, __) => const HotspotListScreen()),
           GoRoute(path: '/pppoe', builder: (_, __) => const PppoeListScreen()),
           GoRoute(path: '/sales', builder: (_, __) => const SalesDashboardScreen()),
@@ -73,7 +75,7 @@ class _NavItem { final IconData icon; final String text; final int index; const 
 
 const _navItems = [
   _NavItem(Icons.dashboard, 'الرئيسية', 0),
-  _NavItem(Icons.wifi, 'المستخدمين', 1),
+  _NavItem(Icons.people, 'إدارة المستخدمين', 1),
   _NavItem(Icons.lan, 'PPPoE', 2),
   _NavItem(Icons.monetization_on, 'المبيعات', 3),
   _NavItem(Icons.backup, 'النسخ', 4),

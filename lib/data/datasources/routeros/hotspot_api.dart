@@ -99,4 +99,26 @@ class HotspotApi {
     }
     return 0;
   }
+
+  Future<String?> addProfile(String name, {String? rateLimit, int? sessionTimeout, int? idleTimeout, String? addressList}) async {
+    final cmd = ['/ip/hotspot/user/profile/add', '=name=$name'];
+    if (rateLimit != null && rateLimit.isNotEmpty) cmd.add('=$rateLimit');
+    if (sessionTimeout != null && sessionTimeout > 0) cmd.add('=session-timeout=${sessionTimeout}s');
+    if (idleTimeout != null && idleTimeout > 0) cmd.add('=idle-timeout=${idleTimeout}s');
+    if (addressList != null && addressList.isNotEmpty) cmd.add('=address-list=$addressList');
+    final reply = await _client.talk(cmd);
+    return _client.getErrorMessage(reply);
+  }
+
+  Future<String?> updateProfile(String id, Map<String, String> fields) async {
+    final cmd = ['/ip/hotspot/user/profile/set', '=.id=$id'];
+    fields.forEach((k, v) => cmd.add('=$k=$v'));
+    final reply = await _client.talk(cmd);
+    return _client.getErrorMessage(reply);
+  }
+
+  Future<String?> removeProfile(String id) async {
+    final reply = await _client.talk(['/ip/hotspot/user/profile/remove', '=.id=$id']);
+    return _client.getErrorMessage(reply);
+  }
 }

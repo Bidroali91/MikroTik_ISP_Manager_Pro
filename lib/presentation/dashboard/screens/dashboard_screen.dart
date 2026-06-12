@@ -199,7 +199,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           subtitle: '${d.onlineUsers} متصل',
           icon: Icons.wifi,
           color: AppColors.primary,
-          onTap: () => context.go('/hotspot'),
+          onTap: () => context.go('/user-manager'),
         ),
         _ServiceCard(
           title: 'PPPoE',
@@ -210,10 +210,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
         _ServiceCard(
           title: 'إدارة المستخدمين',
-          subtitle: '${d.activeUsers} إجمالي المتصلين',
+          subtitle: 'إضافة - حذف - بروفايلات',
           icon: Icons.admin_panel_settings,
           color: AppColors.accent,
-          onTap: () => context.go('/hotspot'),
+          onTap: () => context.go('/user-manager'),
         ),
         _ServiceCard(
           title: 'النسخ الاحتياطي',
