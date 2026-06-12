@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../presentation/auth/screens/login_screen.dart';
+import '../../presentation/auth/screens/register_screen.dart';
+import '../../presentation/auth/providers/auth_provider.dart';
 import '../../presentation/dashboard/screens/dashboard_screen.dart';
 import '../../presentation/hotspot/screens/hotspot_list_screen.dart';
 import '../../presentation/pppoe/screens/pppoe_list_screen.dart';
@@ -19,11 +21,21 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authProvider);
+  final isLoggedIn = authState.isAuthenticated;
+
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/login',
+    redirect: (context, state) {
+      final loggingIn = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+      if (!isLoggedIn && !loggingIn) return '/login';
+      if (isLoggedIn && loggingIn) return '/dashboard';
+      return null;
+    },
     routes: [
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+      GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (_, __, child) => DashboardShell(child: child),

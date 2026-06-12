@@ -24,6 +24,18 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
+    project.plugins.withId("com.android.library") {
+        project.afterEvaluate {
+            try {
+                val android = project.extensions.getByName("android")
+                val compileSdkField = android.javaClass.getMethod("getCompileSdk")
+                val currentSdk = compileSdkField.invoke(android) as? Int
+                if (currentSdk != null && currentSdk < 36) {
+                    android.javaClass.getMethod("setCompileSdk", Int::class.javaPrimitiveType).invoke(android, 36)
+                }
+            } catch (_: Exception) {}
+        }
+    }
 }
 subprojects {
     project.evaluationDependsOn(":app")

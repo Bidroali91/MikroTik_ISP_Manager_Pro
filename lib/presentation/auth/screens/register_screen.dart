@@ -5,24 +5,32 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
 import '../providers/auth_provider.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends ConsumerStatefulWidget {
+  const RegisterScreen({super.key});
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
   bool _obscure = true;
 
   @override
-  void dispose() { _emailCtrl.dispose(); _passCtrl.dispose(); super.dispose(); }
+  void dispose() {
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    _confirmCtrl.dispose();
+    super.dispose();
+  }
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    ref.read(authProvider.notifier).signIn(_emailCtrl.text.trim(), _passCtrl.text);
+    ref.read(authProvider.notifier).signUp(_emailCtrl.text.trim(), _passCtrl.text, _nameCtrl.text.trim());
   }
 
   @override
@@ -44,12 +52,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
-                      child: const Icon(Icons.router_rounded, size: 64, color: Colors.white),
+                      child: const Icon(Icons.person_add_rounded, size: 64, color: Colors.white),
                     ),
                     const SizedBox(height: 16),
-                    const Text('MikroTik ISP Manager', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                    const Text('Create Account', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
                     const SizedBox(height: 8),
-                    const Text('Enterprise Management System', style: TextStyle(fontSize: 14, color: Colors.white70)),
+                    const Text('Join the enterprise management system', style: TextStyle(fontSize: 14, color: Colors.white70)),
                     const SizedBox(height: 40),
                     Card(
                       elevation: 8,
@@ -58,6 +66,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         padding: const EdgeInsets.all(24),
                         child: Column(
                           children: [
+                            TextFormField(
+                              controller: _nameCtrl,
+                              decoration: const InputDecoration(labelText: 'Full Name', prefixIcon: Icon(Icons.person_outlined)),
+                              validator: (v) => v == null || v.trim().isEmpty ? 'Name is required' : null,
+                            ),
+                            const SizedBox(height: 16),
                             TextFormField(
                               controller: _emailCtrl,
                               decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined)),
@@ -75,22 +89,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               validator: Validators.password,
                             ),
-                            const SizedBox(height: 8),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: authState.isLoading ? null : () {
-                                  final email = _emailCtrl.text.trim();
-                                  if (email.isEmpty) {
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter email first')));
-                                    return;
-                                  }
-                                  ref.read(authProvider.notifier).resetPassword(email);
-                                },
-                                child: const Text('Forgot Password?'),
-                              ),
-                            ),
                             const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _confirmCtrl,
+                              obscureText: true,
+                              decoration: const InputDecoration(labelText: 'Confirm Password', prefixIcon: Icon(Icons.lock_outlined)),
+                              validator: (v) => v != _passCtrl.text ? 'Passwords do not match' : null,
+                            ),
+                            const SizedBox(height: 24),
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
@@ -102,7 +108,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                                 child: authState.isLoading
                                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                    : const Text('Sign In', style: TextStyle(fontSize: 16)),
+                                    : const Text('Create Account', style: TextStyle(fontSize: 16)),
                               ),
                             ),
                             if (authState.error != null)
@@ -112,8 +118,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             const SizedBox(height: 16),
                             TextButton(
-                              onPressed: () => context.go('/register'),
-                              child: const Text('Create New Account'),
+                              onPressed: () => context.go('/login'),
+                              child: const Text('Already have an account? Sign In'),
                             ),
                           ],
                         ),

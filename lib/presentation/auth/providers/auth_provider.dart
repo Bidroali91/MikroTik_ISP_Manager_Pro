@@ -35,6 +35,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> signUp(String email, String password, String fullName) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _repo.signUp(email, password, fullName);
+      state = AuthState(isAuthenticated: true, isLoading: false, email: email, userId: fb.FirebaseAuth.instance.currentUser?.uid);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> resetPassword(String email) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _repo.resetPassword(email);
+      state = state.copyWith(isLoading: false, error: 'Password reset email sent');
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
   Future<void> signOut() async {
     await _repo.signOut();
     state = const AuthState();
