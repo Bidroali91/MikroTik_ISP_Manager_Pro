@@ -121,4 +121,89 @@ class HotspotApi {
     final reply = await _client.talk(['/ip/hotspot/user/profile/remove', '=.id=$id']);
     return _client.getErrorMessage(reply);
   }
+
+  // ==================== Firewall ====================
+  Future<List<Map<String, String>>> getFirewallRules() async {
+    final reply = await _client.talk(['/ip/firewall/filter/print']);
+    final rules = <Map<String, String>>[];
+    for (int i = 0; i < reply.length; i++) {
+      if (reply[i] == '!re') {
+        final attrs = <String, String>{};
+        i++;
+        while (i < reply.length && reply[i].startsWith('=')) {
+          final eq = reply[i].indexOf('=', 1);
+          if (eq > 0) attrs[reply[i].substring(1, eq)] = reply[i].substring(eq + 1);
+          i++;
+        }
+        rules.add(attrs);
+      }
+    }
+    return rules;
+  }
+
+  Future<List<Map<String, String>>> getDHCPLeases() async {
+    final reply = await _client.talk(['/ip/dhcp-server/lease/print']);
+    final leases = <Map<String, String>>[];
+    for (int i = 0; i < reply.length; i++) {
+      if (reply[i] == '!re') {
+        final attrs = <String, String>{};
+        i++;
+        while (i < reply.length && reply[i].startsWith('=')) {
+          final eq = reply[i].indexOf('=', 1);
+          if (eq > 0) attrs[reply[i].substring(1, eq)] = reply[i].substring(eq + 1);
+          i++;
+        }
+        leases.add(attrs);
+      }
+    }
+    return leases;
+  }
+
+  Future<List<Map<String, String>>> getLogEntries() async {
+    final reply = await _client.talk(['/log/print', '.count=50']);
+    final logs = <Map<String, String>>[];
+    for (int i = 0; i < reply.length; i++) {
+      if (reply[i] == '!re') {
+        final attrs = <String, String>{};
+        i++;
+        while (i < reply.length && reply[i].startsWith('=')) {
+          final eq = reply[i].indexOf('=', 1);
+          if (eq > 0) attrs[reply[i].substring(1, eq)] = reply[i].substring(eq + 1);
+          i++;
+        }
+        logs.add(attrs);
+      }
+    }
+    return logs;
+  }
+
+  // ==================== Queues ====================
+  Future<List<Map<String, String>>> getQueues() async {
+    final reply = await _client.talk(['/queue/simple/print']);
+    final queues = <Map<String, String>>[];
+    for (int i = 0; i < reply.length; i++) {
+      if (reply[i] == '!re') {
+        final attrs = <String, String>{};
+        i++;
+        while (i < reply.length && reply[i].startsWith('=')) {
+          final eq = reply[i].indexOf('=', 1);
+          if (eq > 0) attrs[reply[i].substring(1, eq)] = reply[i].substring(eq + 1);
+          i++;
+        }
+        queues.add(attrs);
+      }
+    }
+    return queues;
+  }
+
+  Future<String?> addQueue(String name, String target, String maxRate) async {
+    final cmd = ['/queue/simple/add', '=name=$name', '=target=$target', '=max-limit=$maxRate'];
+    final reply = await _client.talk(cmd);
+    return _client.getErrorMessage(reply);
+  }
+
+  Future<String?> removeQueue(String id) async {
+    final reply = await _client.talk(['/queue/simple/remove', '=.id=$id']);
+    return _client.getErrorMessage(reply);
+  }
 }

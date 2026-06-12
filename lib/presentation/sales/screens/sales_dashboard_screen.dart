@@ -1,74 +1,169 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../providers/sales_provider.dart';
 
-class SalesDashboardScreen extends StatelessWidget {
+class SalesDashboardScreen extends ConsumerStatefulWidget {
   const SalesDashboardScreen({super.key});
 
   @override
+  ConsumerState<SalesDashboardScreen> createState() => _SalesDashboardScreenState();
+}
+
+class _SalesDashboardScreenState extends ConsumerState<SalesDashboardScreen> {
+  @override
   Widget build(BuildContext context) {
+    final s = ref.watch(salesProvider);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Sales Dashboard'), actions: [
-        IconButton(icon: const Icon(Icons.date_range), onPressed: () {}),
-        IconButton(icon: const Icon(Icons.file_download), onPressed: () {}),
-      ]),
-      body: ListView(
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(salesProvider.notifier).refresh(),
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const Text('المبيعات', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            _buildKPIRow(s),
+            const SizedBox(height: 16),
+            _buildWeeklyChart(s),
+            const SizedBox(height: 16),
+            _buildRecentSales(s),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKPIRow(SalesState s) {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 1.5,
+      children: [
+        _KpiCard(
+          title: 'مبيعات اليوم',
+          value: '\$${s.todayRevenue.toStringAsFixed(0)}',
+          icon: Icons.today,
+          color: AppColors.primary,
+        ),
+        _KpiCard(
+          title: 'مبيعات الشهر',
+          value: '\$${s.monthlyRevenue.toStringAsFixed(0)}',
+          icon: Icons.calendar_month,
+          color: AppColors.success,
+        ),
+        _KpiCard(
+          title: 'الكروت المباعة',
+          value: '${s.totalVouchers}',
+          icon: Icons.confirmation_number,
+          color: AppColors.warning,
+        ),
+        _KpiCard(
+          title: 'آخر 7 أيام',
+          value: '\$${s.weeklyData.fold(0.0, (a, b) => a + b).toStringAsFixed(0)}',
+          icon: Icons.bar_chart,
+          color: AppColors.accent,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWeeklyChart(SalesState s) {
+    final maxVal = s.weeklyData.reduce((a, b) => a > b ? a : b);
+    final days = ['س', 'ح', 'ن', 'ث', 'ر', 'خ', 'ج'];
+
+    return Card(
+      child: Padding(
         padding: const EdgeInsets.all(16),
-        children: [
-          GridView.count(
-            crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.5,
-            children: [
-              _SalesCard(title: "Today's Sales", value: '\$1,250', change: '+12.5%', up: true),
-              _SalesCard(title: 'This Month', value: '\$28,400', change: '+8.3%', up: true),
-              _SalesCard(title: 'Vouchers Sold', value: '342', change: '+15.2%', up: true),
-              _SalesCard(title: 'Pending', value: '\$2,100', change: '-3.1%', up: false),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Weekly Revenue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 200,
-                    child: BarChart(BarChartData(
-                      alignment: BarChartAlignment.spaceAround,
-                      barGroups: List.generate(7, (i) => BarChartGroupData(x: i, barRods: [BarChartRodData(toY: [200, 350, 280, 400, 320, 450, 380][i].toDouble(), color: AppColors.primary, width: 20)])),
-                      titlesData: FlTitlesData(show: true, bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, _) => Text(['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][v.toInt()], style: const TextStyle(fontSize: 10))))),
-                      borderData: FlBorderData(show: false),
-                      gridData: FlGridData(show: false),
-                    )),
-                  ),
-                ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('مبيعات آخر 7 أيام', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 150,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: List.generate(7, (i) {
+                  final value = s.weeklyData[i];
+                  final height = maxVal > 0 ? (value / maxVal) * 120 : 0.0;
+                  return Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (value > 0)
+                          Text('\$${value.toStringAsFixed(0)}', style: const TextStyle(fontSize: 10)),
+                        const SizedBox(height: 4),
+                        Container(
+                          height: height + 4,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.7),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(days[i], style: const TextStyle(fontSize: 11)),
+                      ],
+                    ),
+                  );
+                }),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          const Text('Recent Sales', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          ...List.generate(10, (i) => Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: ListTile(
-              leading: CircleAvatar(backgroundColor: AppColors.success.withOpacity(0.2), child: const Icon(Icons.check_circle, color: AppColors.success, size: 20)),
-              title: Text('Voucher Sale #${1000 + i}'),
-              subtitle: Text('${i + 1} x 1-Day • \$${((i + 1) * 5).toStringAsFixed(2)}'),
-              trailing: Text(DateTime.now().subtract(Duration(hours: i)).toString().substring(11, 16), style: const TextStyle(color: Colors.grey)),
-            ),
-          )),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentSales(SalesState s) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('آخر المبيعات', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            if (s.recentSales.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Text('لا توجد مبيعات بعد', style: TextStyle(color: Colors.grey)),
+                ),
+              )
+            else
+              ...s.recentSales.map((sale) => ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+                      child: Icon(
+                        sale.type == 'voucher' ? Icons.confirmation_number : Icons.wifi,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(sale.customerName.isNotEmpty ? sale.customerName : sale.profile),
+                    subtitle: Text('${sale.profile} × ${sale.quantity}'),
+                    trailing: Text(
+                      '\$${sale.totalAmount.toStringAsFixed(0)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.success),
+                    ),
+                  )),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _SalesCard extends StatelessWidget {
-  final String title; final String value; final String change; final bool up;
-  const _SalesCard({required this.title, required this.value, required this.change, required this.up});
+class _KpiCard extends StatelessWidget {
+  final String title, value;
+  final IconData icon;
+  final Color color;
+  const _KpiCard({required this.title, required this.value, required this.icon, required this.color});
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -76,17 +171,12 @@ class _SalesCard extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            const Spacer(),
-            Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            Row(
-              children: [
-                Icon(up ? Icons.trending_up : Icons.trending_down, color: up ? AppColors.success : AppColors.error, size: 16),
-                const SizedBox(width: 4),
-                Text(change, style: TextStyle(fontSize: 12, color: up ? AppColors.success : AppColors.error)),
-              ],
-            ),
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 8),
+            Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey)),
           ],
         ),
       ),
