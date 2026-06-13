@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color primary = Color(0xFF1565C0);
-  static const Color primaryDark = Color(0xFF0D47A1);
-  static const Color primaryLight = Color(0xFF42A5F5);
-  static const Color accent = Color(0xFF00ACC1);
-  static const Color accentDark = Color(0xFF00838F);
+  // الهوية الذهبية: بنفسجي للشريط العلوي، تركوازي ثانوي، وردي للأزرار، أخضر لزر الإضافة.
+  static const Color primary = Color(0xFF9C27B0); // بنفسجي
+  static const Color primaryDark = Color(0xFF7B1FA2);
+  static const Color primaryLight = Color(0xFFBA68C8);
+  static const Color accent = Color(0xFF00897B); // تركوازي
+  static const Color accentDark = Color(0xFF00695C);
+  static const Color magenta = Color(0xFFD81B60); // وردي/ماجنتا للأزرار
+  static const Color magentaDark = Color(0xFFAD1457);
+  static const Color fabGreen = Color(0xFF2E9E6B); // أخضر زر الإضافة
+  static const Color cardRed = Color(0xFFD32F2F); // نص معاينة الكرت
   static const Color success = Color(0xFF4CAF50);
   static const Color warning = Color(0xFFFFA726);
   static const Color error = Color(0xFFEF5350);
