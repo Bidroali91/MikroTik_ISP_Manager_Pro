@@ -16,6 +16,7 @@ class VouchersScreen extends ConsumerStatefulWidget {
 class _VouchersScreenState extends ConsumerState<VouchersScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  VoucherCardOptions _cardOptions = const VoucherCardOptions();
 
   @override
   void initState() {
@@ -254,7 +255,8 @@ class _VouchersScreenState extends ConsumerState<VouchersScreen>
     );
   }
 
-  Future<void> _printVoucher(VoucherModel voucher) => _printPdf([voucher]);
+  Future<void> _printVoucher(VoucherModel voucher) =>
+      _openCardOptions([voucher]);
 
   Future<void> _printSelectedVouchers(List<VoucherModel> vouchers) {
     final available = vouchers.where((v) => !v.isUsed).toList();
@@ -264,14 +266,75 @@ class _VouchersScreenState extends ConsumerState<VouchersScreen>
       );
       return Future.value();
     }
-    return _printPdf(available);
+    return _openCardOptions(available);
   }
 
-  Future<void> _printPdf(List<VoucherModel> vouchers) async {
+  /// حوار تخصيص الكرت: إظهار/إخفاء الحقول واسم الشبكة قبل الطباعة.
+  Future<void> _openCardOptions(List<VoucherModel> vouchers) async {
+    var opts = _cardOptions;
+    final networkC = TextEditingController(text: opts.networkName);
+    final result = await showDialog<VoucherCardOptions>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) {
+          Widget toggle(String label, bool value, ValueChanged<bool> onCh) =>
+              SwitchListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(label),
+                value: value,
+                onChanged: (v) => setLocal(() => onCh(v)),
+              );
+          return AlertDialog(
+            title: const Text('تخصيص الكرت'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: networkC,
+                    decoration: const InputDecoration(labelText: 'اسم الشبكة'),
+                    onChanged: (v) => opts = opts.copyWith(networkName: v),
+                  ),
+                  const SizedBox(height: 8),
+                  toggle('إظهار اسم الشبكة', opts.showNetwork,
+                      (v) => opts = opts.copyWith(showNetwork: v)),
+                  toggle('إظهار اسم المستخدم', opts.showUsername,
+                      (v) => opts = opts.copyWith(showUsername: v)),
+                  toggle('إظهار كلمة المرور', opts.showPassword,
+                      (v) => opts = opts.copyWith(showPassword: v)),
+                  toggle('إظهار نوع البروفايل', opts.showProfile,
+                      (v) => opts = opts.copyWith(showProfile: v)),
+                  toggle('إظهار السعر', opts.showPrice,
+                      (v) => opts = opts.copyWith(showPrice: v)),
+                  toggle('إظهار رمز QR', opts.showQr,
+                      (v) => opts = opts.copyWith(showQr: v)),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.print),
+                label: const Text('طباعة'),
+                onPressed: () => Navigator.pop(ctx, opts),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (result != null) {
+      _cardOptions = result; // حفظ الاختيار للمرة القادمة
+      await _printPdf(vouchers, result);
+    }
+  }
+
+  Future<void> _printPdf(List<VoucherModel> vouchers, VoucherCardOptions opts) async {
     try {
       await Printing.layoutPdf(
         name: 'vouchers_${DateTime.now().millisecondsSinceEpoch}',
-        onLayout: (_) => VoucherPdf.build(vouchers),
+        onLayout: (_) => VoucherPdf.build(vouchers, options: opts),
       );
     } catch (e) {
       if (mounted) {
