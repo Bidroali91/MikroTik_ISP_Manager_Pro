@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:printing/printing.dart';
 import '../../../core/utils/voucher_pdf.dart';
@@ -49,6 +50,11 @@ class _VouchersScreenState extends ConsumerState<VouchersScreen>
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_awesome_motion),
+            tooltip: 'طباعة مجموعة بطاقات',
+            onPressed: () => context.push('/card-generator'),
+          ),
           IconButton(
             icon: const Icon(Icons.print),
             onPressed: () => _printSelectedVouchers(voucherState.vouchers),

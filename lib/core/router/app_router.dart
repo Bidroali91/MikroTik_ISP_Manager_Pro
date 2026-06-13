@@ -22,6 +22,7 @@ import '../../presentation/vouchers/screens/vouchers_screen.dart';
 import '../../presentation/packages/screens/packages_screen.dart';
 import '../../presentation/network_tools/screens/network_tools_screen.dart';
 import '../../presentation/tv_radio/screens/tv_radio_screen.dart';
+import '../../presentation/vouchers/screens/card_generator_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -73,6 +74,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/packages', builder: (_, __) => const PackagesScreen()),
           GoRoute(path: '/network-tools', builder: (_, __) => const NetworkToolsScreen()),
           GoRoute(path: '/tv-radio', builder: (_, __) => const TvRadioScreen()),
+          GoRoute(path: '/card-generator', builder: (_, __) => const CardGeneratorScreen()),
         ],
       ),
     ],

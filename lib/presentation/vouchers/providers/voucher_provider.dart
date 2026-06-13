@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/providers/router_connection_provider.dart';
@@ -206,6 +207,75 @@ class VoucherNotifier extends StateNotifier<VoucherState> {
       );
       return null;
     } catch (e) {
+      return e.toString();
+    }
+  }
+
+  /// توليد كروت بأسلوب "متروكيك": اسم مستخدم رقمي بطول محدّد مع بادئة،
+  /// وكلمة سر رقمية (أو بدون = نفس المستخدم).
+  Future<String?> generateCards({
+    required int count,
+    required String prefix,
+    required int usernameDigits,
+    required int passwordDigits,
+    required String profile,
+    required String profileName,
+    required int durationHours,
+    required double price,
+    required String networkName,
+    bool bindFirstUse = true,
+    String notes = '',
+  }) async {
+    final conn = _ref.read(routerConnectionProvider);
+    if (!conn.isConnected || conn.service == null) {
+      return 'الراوتر غير متصل';
+    }
+
+    final rand = Random();
+    state = state.copyWith(isLoading: true);
+    try {
+      for (int i = 0; i < count; i++) {
+        final digits = List.generate(usernameDigits, (_) => rand.nextInt(10)).join();
+        final username = '$prefix$digits';
+        final password = passwordDigits > 0
+            ? List.generate(passwordDigits, (_) => rand.nextInt(10)).join()
+            : username;
+
+        final comment = [
+          if (networkName.isNotEmpty) networkName,
+          if (notes.isNotEmpty) notes,
+          if (bindFirstUse) 'bind',
+        ].join(' | ');
+
+        final error = await conn.service!.voucher.createVoucherUser(
+          name: username,
+          password: password,
+          profile: profile,
+          comment: comment.isEmpty ? 'Voucher: $profileName' : comment,
+        );
+        if (error != null) {
+          state = state.copyWith(isLoading: false);
+          return error;
+        }
+
+        final voucher = VoucherModel(
+          id: _firestore.collection('vouchers').doc().id,
+          username: username,
+          password: password,
+          profile: profile,
+          profileName: profileName,
+          durationHours: durationHours,
+          price: price,
+          createdAt: DateTime.now(),
+          routerId: conn.ip,
+        );
+        await _firestore.collection('vouchers').doc(voucher.id).set(voucher.toMap());
+        state = state.copyWith(vouchers: [voucher, ...state.vouchers]);
+      }
+      state = state.copyWith(isLoading: false);
+      return null;
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
       return e.toString();
     }
   }
