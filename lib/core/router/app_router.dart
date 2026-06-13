@@ -18,11 +18,12 @@ import '../../presentation/electricity/screens/electricity_screen.dart';
 import '../../presentation/settings/screens/settings_screen.dart';
 import '../../presentation/telegram/screens/telegram_screen.dart';
 import '../../presentation/user_manager/screens/user_manager_screen.dart';
+import '../../presentation/vouchers/screens/vouchers_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
-final _navRoutes = ['/dashboard','/user-manager','/pppoe','/sales','/backup','/security','/complaints','/notifications','/maintenance','/electricity','/telegram','/settings'];
+final _navRoutes = ['/dashboard','/user-manager','/pppoe','/sales','/vouchers','/backup','/security','/complaints','/notifications','/maintenance','/electricity','/telegram','/settings'];
 
 int _routeIndex(String loc) {
   for (int i = 0; i < _navRoutes.length; i++) {
@@ -57,6 +58,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/hotspot', builder: (_, __) => const HotspotListScreen()),
           GoRoute(path: '/pppoe', builder: (_, __) => const PppoeListScreen()),
           GoRoute(path: '/sales', builder: (_, __) => const SalesDashboardScreen()),
+          GoRoute(path: '/vouchers', builder: (_, __) => const VouchersScreen()),
           GoRoute(path: '/backup', builder: (_, __) => const BackupScreen()),
           GoRoute(path: '/security', builder: (_, __) => const SecurityScreen()),
           GoRoute(path: '/complaints', builder: (_, __) => const ComplaintsScreen()),
@@ -78,21 +80,22 @@ const _navItems = [
   _NavItem(Icons.people, 'إدارة المستخدمين', 1),
   _NavItem(Icons.lan, 'PPPoE', 2),
   _NavItem(Icons.monetization_on, 'المبيعات', 3),
-  _NavItem(Icons.backup, 'النسخ', 4),
-  _NavItem(Icons.security, 'الأمان', 5),
-  _NavItem(Icons.report, 'الشكاوى', 6),
-  _NavItem(Icons.notifications, 'التنبيهات', 7),
-  _NavItem(Icons.build, 'الصيانة', 8),
-  _NavItem(Icons.bolt, 'الكهرباء', 9),
-  _NavItem(Icons.telegram, 'بوت', 10),
-  _NavItem(Icons.settings, 'الإعدادات', 11),
+  _NavItem(Icons.vpn_key, 'القسائم', 4),
+  _NavItem(Icons.backup, 'النسخ', 5),
+  _NavItem(Icons.security, 'الأمان', 6),
+  _NavItem(Icons.report, 'الشكاوى', 7),
+  _NavItem(Icons.notifications, 'التنبيهات', 8),
+  _NavItem(Icons.build, 'الصيانة', 9),
+  _NavItem(Icons.bolt, 'الكهرباء', 10),
+  _NavItem(Icons.telegram, 'بوت', 11),
+  _NavItem(Icons.settings, 'الإعدادات', 12),
 ];
 
 const _navGroups = [
   ('الشبكة', [0, 1, 2]),
-  ('الأعمال', [3, 6, 9]),
-  ('النظام', [4, 5, 8, 7]),
-  ('أخرى', [10, 11]),
+  ('الأعمال', [3, 4, 7, 10]),
+  ('النظام', [5, 6, 9, 8]),
+  ('أخرى', [11, 12]),
 ];
 
 class DashboardShell extends ConsumerWidget {

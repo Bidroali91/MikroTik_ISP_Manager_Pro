@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:async';
+import 'package:crypto/crypto.dart';
 
 class RouterOSClient {
   Socket? _socket;
@@ -34,11 +35,42 @@ class RouterOSClient {
   }
 
   Future<bool> login(String username, String password) async {
+    // RouterOS v6.43+ : تسجيل دخول مباشر بكلمة المرور.
+    // النسخ الأقدم تتجاهل كلمة المرور وترد بتحدٍّ =ret= يتطلب رد MD5.
     var reply = await talk(['/login', '=name=$username', '=password=$password']);
-    if (reply.any((s) => s.startsWith('!done')) && reply.every((s) => !s.startsWith('!trap'))) {
-      return true;
+
+    // فشل صريح (اسم مستخدم/كلمة مرور خاطئة على النسخ الحديثة)
+    if (reply.any((s) => s.startsWith('!trap'))) {
+      return false;
     }
-    return false;
+
+    // النسخ الحديثة: !done بدون تحدٍّ → نجح
+    final challenge = _extractChallenge(reply);
+    if (challenge == null) {
+      return reply.any((s) => s.startsWith('!done'));
+    }
+
+    // النسخ القديمة: حساب MD5(0x00 + password + challenge) والرد به
+    final md5Input = <int>[0, ...utf8.encode(password), ...challenge];
+    final response = '00${md5.convert(md5Input).toString()}';
+    final reply2 = await talk(['/login', '=name=$username', '=response=$response']);
+    return reply2.any((s) => s.startsWith('!done')) &&
+        reply2.every((s) => !s.startsWith('!trap'));
+  }
+
+  /// يستخرج تحدّي MD5 من رد =ret= (سلسلة hex) ويحوّله إلى بايتات، أو null إن لم يوجد.
+  List<int>? _extractChallenge(List<String> reply) {
+    for (final w in reply) {
+      if (w.startsWith('=ret=')) {
+        final hex = w.substring(5);
+        final bytes = <int>[];
+        for (int i = 0; i + 1 < hex.length; i += 2) {
+          bytes.add(int.parse(hex.substring(i, i + 2), radix: 16));
+        }
+        return bytes;
+      }
+    }
+    return null;
   }
 
   Future<List<String>> talk(List<String> words) async {

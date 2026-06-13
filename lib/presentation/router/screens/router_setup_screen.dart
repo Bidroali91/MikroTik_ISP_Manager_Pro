@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/router_connection_provider.dart';
 
@@ -12,11 +13,25 @@ class RouterSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _RouterSetupScreenState extends ConsumerState<RouterSetupScreen> {
-  final _ipCtrl = TextEditingController(text: '192.168.88.1');
-  final _userCtrl = TextEditingController(text: 'admin');
+  final _ipCtrl = TextEditingController();
+  final _userCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
-  final _portCtrl = TextEditingController(text: '8728');
+  final _portCtrl = TextEditingController();
   bool _obscurePass = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLastConnection();
+  }
+
+  Future<void> _loadLastConnection() async {
+    final prefs = await SharedPreferences.getInstance();
+    _ipCtrl.text = prefs.getString('last_router_ip') ?? '192.168.88.1';
+    _userCtrl.text = prefs.getString('last_router_user') ?? 'admin';
+    _passCtrl.text = prefs.getString('last_router_pass') ?? '';
+    _portCtrl.text = (prefs.getInt('last_router_port') ?? 8728).toString();
+  }
 
   @override
   void dispose() {
@@ -43,6 +58,11 @@ class _RouterSetupScreenState extends ConsumerState<RouterSetupScreen> {
     final success = await ref.read(routerConnectionProvider.notifier).connect(ip, user, pass, port);
 
     if (success && mounted) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('last_router_ip', ip);
+      await prefs.setString('last_router_user', user);
+      await prefs.setString('last_router_pass', pass);
+      await prefs.setInt('last_router_port', port);
       context.go('/dashboard');
     }
   }
