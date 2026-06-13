@@ -21,11 +21,12 @@ import '../../presentation/user_manager/screens/user_manager_screen.dart';
 import '../../presentation/vouchers/screens/vouchers_screen.dart';
 import '../../presentation/packages/screens/packages_screen.dart';
 import '../../presentation/network_tools/screens/network_tools_screen.dart';
+import '../../presentation/tv_radio/screens/tv_radio_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
-final _navRoutes = ['/dashboard','/user-manager','/pppoe','/sales','/vouchers','/backup','/security','/complaints','/notifications','/maintenance','/electricity','/telegram','/settings','/packages','/network-tools'];
+final _navRoutes = ['/dashboard','/user-manager','/pppoe','/sales','/vouchers','/backup','/security','/complaints','/notifications','/maintenance','/electricity','/telegram','/settings','/packages','/network-tools','/tv-radio'];
 
 int _routeIndex(String loc) {
   for (int i = 0; i < _navRoutes.length; i++) {
@@ -71,6 +72,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
           GoRoute(path: '/packages', builder: (_, __) => const PackagesScreen()),
           GoRoute(path: '/network-tools', builder: (_, __) => const NetworkToolsScreen()),
+          GoRoute(path: '/tv-radio', builder: (_, __) => const TvRadioScreen()),
         ],
       ),
     ],
@@ -95,11 +97,12 @@ const _navItems = [
   _NavItem(Icons.settings, 'الإعدادات', 12),
   _NavItem(Icons.inventory_2, 'الباقات', 13),
   _NavItem(Icons.network_check, 'أدوات الشبكة', 14),
+  _NavItem(Icons.live_tv, 'TV & Radio', 15),
 ];
 
 const _navGroups = [
   ('الشبكة', [0, 1, 2, 14]),
-  ('الأعمال', [3, 4, 13, 7, 10]),
+  ('الأعمال', [3, 4, 13, 7, 10, 15]),
   ('النظام', [5, 6, 9, 8]),
   ('أخرى', [11, 12]),
 ];
