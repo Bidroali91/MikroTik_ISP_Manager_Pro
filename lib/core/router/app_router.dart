@@ -19,11 +19,13 @@ import '../../presentation/settings/screens/settings_screen.dart';
 import '../../presentation/telegram/screens/telegram_screen.dart';
 import '../../presentation/user_manager/screens/user_manager_screen.dart';
 import '../../presentation/vouchers/screens/vouchers_screen.dart';
+import '../../presentation/packages/screens/packages_screen.dart';
+import '../../presentation/network_tools/screens/network_tools_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
-final _navRoutes = ['/dashboard','/user-manager','/pppoe','/sales','/vouchers','/backup','/security','/complaints','/notifications','/maintenance','/electricity','/telegram','/settings'];
+final _navRoutes = ['/dashboard','/user-manager','/pppoe','/sales','/vouchers','/backup','/security','/complaints','/notifications','/maintenance','/electricity','/telegram','/settings','/packages','/network-tools'];
 
 int _routeIndex(String loc) {
   for (int i = 0; i < _navRoutes.length; i++) {
@@ -67,6 +69,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/electricity', builder: (_, __) => const ElectricityScreen()),
           GoRoute(path: '/telegram', builder: (_, __) => const TelegramScreen()),
           GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
+          GoRoute(path: '/packages', builder: (_, __) => const PackagesScreen()),
+          GoRoute(path: '/network-tools', builder: (_, __) => const NetworkToolsScreen()),
         ],
       ),
     ],
@@ -89,11 +93,13 @@ const _navItems = [
   _NavItem(Icons.bolt, 'الكهرباء', 10),
   _NavItem(Icons.telegram, 'بوت', 11),
   _NavItem(Icons.settings, 'الإعدادات', 12),
+  _NavItem(Icons.inventory_2, 'الباقات', 13),
+  _NavItem(Icons.network_check, 'أدوات الشبكة', 14),
 ];
 
 const _navGroups = [
-  ('الشبكة', [0, 1, 2]),
-  ('الأعمال', [3, 4, 7, 10]),
+  ('الشبكة', [0, 1, 2, 14]),
+  ('الأعمال', [3, 4, 13, 7, 10]),
   ('النظام', [5, 6, 9, 8]),
   ('أخرى', [11, 12]),
 ];

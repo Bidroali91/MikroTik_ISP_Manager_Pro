@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:printing/printing.dart';
+import '../../../core/utils/voucher_pdf.dart';
 import '../../../data/models/voucher_model.dart';
 import '../providers/voucher_provider.dart';
 
@@ -252,17 +254,32 @@ class _VouchersScreenState extends ConsumerState<VouchersScreen>
     );
   }
 
-  void _printVoucher(VoucherModel voucher) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('جاري طباعة القسيمة ${voucher.username}...')),
-    );
+  Future<void> _printVoucher(VoucherModel voucher) => _printPdf([voucher]);
+
+  Future<void> _printSelectedVouchers(List<VoucherModel> vouchers) {
+    final available = vouchers.where((v) => !v.isUsed).toList();
+    if (available.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('لا توجد قسائم متاحة للطباعة')),
+      );
+      return Future.value();
+    }
+    return _printPdf(available);
   }
 
-  void _printSelectedVouchers(List<VoucherModel> vouchers) {
-    final unprinted = vouchers.where((v) => !v.isUsed).toList();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('جاري طباعة ${unprinted.length} قسيمة...')),
-    );
+  Future<void> _printPdf(List<VoucherModel> vouchers) async {
+    try {
+      await Printing.layoutPdf(
+        name: 'vouchers_${DateTime.now().millisecondsSinceEpoch}',
+        onLayout: (_) => VoucherPdf.build(vouchers),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('تعذّرت الطباعة: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   Future<void> _disableVoucher(String id) async {
